@@ -11,10 +11,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Simon on 2017-06-24.
@@ -22,10 +19,14 @@ import java.util.List;
 public class StoreScanner {
 
     private GeoLocation location;
-    private static List<String> ALLOWED_STORES = Arrays.asList("Coop", "ICA", "Ica", "Willys", "Hemköp", "Lidl", "Matöppet");
+    private static List<StoreType> ALLOWED_STORES = Arrays.asList(StoreType.values());
 
     public StoreScanner() {
         this.location = GeoIPv4.getLocation(findMyIpAddress());
+    }
+
+    public StoreScanner(String ipAddress) {
+        this.location = GeoIPv4.getLocation(ipAddress);
     }
 
     public GeoLocation getLocation() {
@@ -43,33 +44,37 @@ public class StoreScanner {
         JsonArray result = (JsonArray) root.getAsJsonObject().get("results");
         request.disconnect();
 
-        List<Integer> acceptedStoresIndex = new ArrayList<Integer>();
+        Map<Integer, StoreType> acceptedStoresIndexAndType = new HashMap<Integer, StoreType>();
         for (int i = 0; i < result.size(); i++) {
             String storeName = ((JsonObject) result.get(i)).get("name").getAsString();
-            for (String store : ALLOWED_STORES) {
-                if (storeName.contains(store)) {
-                    acceptedStoresIndex.add(i);
+            for (StoreType type : ALLOWED_STORES) {
+                //TODO have a nono-list (as APOTEK below)
+                if (storeName.toUpperCase().contains(type.name()) && !storeName.toUpperCase().contains("APOTEK")) {
+                    acceptedStoresIndexAndType.put(i, type);
                     break;
                 }
             }
         }
         List<Store> storeList = new ArrayList<Store>();
-        for (Integer anAcceptedStoresIndex : acceptedStoresIndex) {
-            int index = anAcceptedStoresIndex;
+        for (Map.Entry<Integer, StoreType> entry : acceptedStoresIndexAndType.entrySet()) {
+            int index = entry.getKey();
             JsonObject tempRoot = ((JsonObject) result.get(index));
             float latitude = tempRoot.get("geometry").getAsJsonObject().get("location").getAsJsonObject().get("lat").getAsFloat();
             float longitude = tempRoot.get("geometry").getAsJsonObject().get("location").getAsJsonObject().get("lng").getAsFloat();
-            String name = tempRoot.get("name").getAsString();
+            String name = tempRoot.get("name").getAsString().toLowerCase();
             String address = tempRoot.get("vicinity").getAsString();
+            StoreType type = entry.getValue();
 
-            Store store = new Store(latitude, longitude, location.distance(latitude, longitude), name, address);
+            Store store = new Store(latitude, longitude, location.distance(latitude, longitude), name, address, type);
             storeList.add(store);
         }
         Collections.sort(storeList);
+        HttpRequestHandler.linkStoresWithWebsite(storeList, location.getLatitude(), location.getLongitude());
 
         return storeList;
     }
 
+    //TODO upgrade way of finding, using mobile should become way better
     private String findMyIpAddress() {
         URL url;
         BufferedReader in;
