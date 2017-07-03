@@ -61,7 +61,7 @@ public class StoreScanner {
             JsonObject tempRoot = ((JsonObject) result.get(index));
             float latitude = tempRoot.get("geometry").getAsJsonObject().get("location").getAsJsonObject().get("lat").getAsFloat();
             float longitude = tempRoot.get("geometry").getAsJsonObject().get("location").getAsJsonObject().get("lng").getAsFloat();
-            String name = tempRoot.get("name").getAsString().toLowerCase();
+            String name = tempRoot.get("name").getAsString().toLowerCase().replaceAll("(maxi ica)", "ica maxi");
             String address = tempRoot.get("vicinity").getAsString();
             StoreType type = entry.getValue();
 

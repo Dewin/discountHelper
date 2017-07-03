@@ -49,12 +49,14 @@ public abstract class HttpRequestHandler {
     }
 
     private static List<Element> findAllStoreCards(String city) {
-        city = city.toLowerCase().replaceAll("[åä]", "a").replaceAll("ö", "o");
+        String errName = city;
+        city = city.toLowerCase().replaceAll("[åä]", "a").replaceAll("ö", "o").replaceAll(" ", "-");
         String requestURL = "https://www.ica.se/butiker/" + city;
         try {
             Document doc = Jsoup.connect(requestURL).maxBodySize(0).get();
             return doc.select("store-card-list-item:not(.compact)");
         } catch (IOException e) {
+            System.err.print("Seems like ICA made a slip, city " + errName + " is missing it's webpage. ");
             e.printStackTrace();
         }
         return null;
@@ -76,25 +78,35 @@ public abstract class HttpRequestHandler {
         for (Store myStore : myStores) {
             for (Iterator<String> iterator = foundStoreNames.iterator(); iterator.hasNext(); ) {
                 String foundStore = iterator.next();
-                int lengthSearch = (myStore.getName().length() > 15 && foundStore.length() > 15) ? 15 : (foundStore.length() < myStore.getName().length()) ? foundStore.length() : myStore.getName().length();
-                boolean attempt = false;
-                if (myStore.getName().split(" ").length > 2) {
-                    attempt = myStore.getName().split(" ")[2].contains(foundStore);
-                }
-                if (myStore.getName().equals(foundStore) || attempt || myStore.getName().substring(0, lengthSearch).equals(foundStore.substring(0, lengthSearch))) {
+                if (myStore.getName().equals(foundStore)) {
                     myStore.setDiscountLink(foundStoreNamesWithLink.get(foundStore));
                     iterator.remove();
                     break;
                 }
             }
         }
+
+        //Match not so exact
+        List<Store> emptyStores = getEmptyStores(myStores);
+        for (Store myStore : emptyStores) {
+            for (Iterator<String> iterator = foundStoreNames.iterator(); iterator.hasNext(); ) {
+                String foundStore = iterator.next();
+                int lengthSearch = (myStore.getName().length() > 15 && foundStore.length() > 15) ? 15 : (foundStore.length() < myStore.getName().length()) ? foundStore.length() : myStore.getName().length();
+                boolean attempt = false;
+                if (myStore.getName().split(" ").length > 2) {
+                    attempt = myStore.getName().split(" ")[2].contains(foundStore);
+                }
+                if (attempt || myStore.getName().substring(0, lengthSearch).equals(foundStore.substring(0, lengthSearch))) {
+                    myStore.setDiscountLink(foundStoreNamesWithLink.get(foundStore));
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+
         //Match the rest by distance
         //TODO this is unsafe, maybe add a notification to this
-        List<Store> emptyStores = new ArrayList<Store>();
-        for (Store store : myStores) {
-            if (store.getDiscountLink() == null || store.getDiscountLink().equals(""))
-                emptyStores.add(store);
-        }
+        emptyStores = getEmptyStores(myStores);
         for (Store emptyStore : emptyStores) {
             double bestScore = emptyStore.getName().length();
             String currentWinner = "";
@@ -118,5 +130,14 @@ public abstract class HttpRequestHandler {
     private static double distanceScore(String str1, String str2) {
         StringDistance distance = StringDistances.damerauLevenshtein();
         return distance.distance(str1, str2);
+    }
+
+    private static List<Store> getEmptyStores(List<Store> myStores) {
+        List<Store> emptyStores = new ArrayList<Store>();
+        for (Store store : myStores) {
+            if (store.getDiscountLink() == null || store.getDiscountLink().equals(""))
+                emptyStores.add(store);
+        }
+        return emptyStores;
     }
 }
