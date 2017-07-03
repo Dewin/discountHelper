@@ -83,11 +83,11 @@ public class GeoLocation {
         float lon1 = this.longitude;
         float lat2 = latitude;
         float lon2 = longitude;
-        lat1 = (float)((double)lat1 * 0.017453292500000002D);
-        lat2 = (float)((double)lat2 * 0.017453292500000002D);
-        double delta_lat = (double)(lat2 - lat1);
-        double delta_lon = (double)(lon2 - lon1) * 0.017453292500000002D;
-        double temp = Math.pow(Math.sin(delta_lat / 2.0D), 2.0D) + Math.cos((double)lat1) * Math.cos((double)lat2) * Math.pow(Math.sin(delta_lon / 2.0D), 2.0D);
+        lat1 = (float) ((double) lat1 * 0.017453292500000002D);
+        lat2 = (float) ((double) lat2 * 0.017453292500000002D);
+        double delta_lat = (double) (lat2 - lat1);
+        double delta_lon = (double) (lon2 - lon1) * 0.017453292500000002D;
+        double temp = Math.pow(Math.sin(delta_lat / 2.0D), 2.0D) + Math.cos((double) lat1) * Math.cos((double) lat2) * Math.pow(Math.sin(delta_lon / 2.0D), 2.0D);
         return 12756.4D * Math.atan2(Math.sqrt(temp), Math.sqrt(1.0D - temp));
     }
 
