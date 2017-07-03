@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>se.simon.geoLocation</groupId>
-    <artifactId>geoLocation</artifactId>
+    <groupId>se.simon.discountHelper</groupId>
+    <artifactId>discountHelper</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
@@ -20,7 +20,24 @@
             <artifactId>gson</artifactId>
             <version>2.8.1</version>
         </dependency>
-
+        <dependency>
+            <!-- jsoup HTML parser library @ http://jsoup.org/ -->
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.10.2</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.mpkorstanje/simmetrics-core -->
+        <dependency>
+            <groupId>com.github.mpkorstanje</groupId>
+            <artifactId>simmetrics-core</artifactId>
+            <version>4.1.1</version>
+        </dependency>
     </dependencies>
 
 </project>
