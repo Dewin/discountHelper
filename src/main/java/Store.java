@@ -7,13 +7,18 @@ public class Store implements Comparable<Store> {
     private double distanceToUser;
     private String name;
     private String address;
+    private String discountLink;
+    private StoreType type;
 
-    public Store(float latitude, float longitude, double distanceToUser, String name, String address) {
+
+    public Store(float latitude, float longitude, double distanceToUser, String name, String address, StoreType type) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.distanceToUser = distanceToUser;
         this.name = name;
         this.address = address;
+        this.discountLink = "";
+        this.type = type;
     }
 
     public float getLatitude() {
@@ -34,6 +39,18 @@ public class Store implements Comparable<Store> {
 
     public String getAddress() {
         return address;
+    }
+
+    public StoreType getType() {
+        return type;
+    }
+
+    public String getDiscountLink() {
+        return discountLink;
+    }
+
+    public void setDiscountLink(String discountLink) {
+        this.discountLink = discountLink;
     }
 
     public int compareTo(Store o) {
