@@ -70,7 +70,9 @@ public class StoreScanner {
         }
         Collections.sort(storeList);
         HttpRequestHandler.linkStoresWithWebsite(storeList, location.getLatitude(), location.getLongitude());
-
+        for (Store s : storeList) {
+            HttpRequestHandler.addAllDiscountedItems(s, s.getDiscountLink());
+        }
         return storeList;
     }
 

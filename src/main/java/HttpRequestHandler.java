@@ -28,6 +28,86 @@ public abstract class HttpRequestHandler {
         return stores;
     }
 
+    public static List<Item> addAllDiscountedItems(Store store, String discountLink) {
+        List<Element> sliderElements = findAllSliderElements(discountLink);
+        String name;
+        String info;
+        String imageLink;
+        double price;
+        int amount;
+        Unit unit;
+        if (sliderElements != null) {
+            for (Element e : sliderElements) {
+                name = extractName(e);
+                info = extractInfo(e);
+                imageLink = extractImageLink(e);
+                price = extractPrice(e);
+                amount = extractAmount(e);
+                unit = extractUnit(e);
+                store.addItem(new Item(name, info, imageLink, price, amount, unit));
+            }
+        }
+        return null;
+    }
+
+    private static String extractName(Element element) {
+        return element.getElementsByClass("item-name-product").text();
+    }
+
+    private static String extractInfo(Element element) {
+        return element.getElementsByClass("item-info").text();
+    }
+
+    private static String extractImageLink(Element element) {
+        return element.getElementsByClass("item-image").attr("src");
+    }
+
+    private static double extractPrice(Element element) {
+        String valueString = element.getElementsByClass("product-price__price-value").text().replaceAll("[:\\-%]", "");
+        int value = Integer.parseInt(valueString);
+        String decimalString = element.getElementsByClass("product-price__decimal").text();
+        if (!decimalString.equals("")) {
+            int decimal = Integer.parseInt(decimalString);
+            return Double.parseDouble(value + "." + decimal);
+        }
+        return Double.parseDouble(value + "");
+    }
+
+    private static int extractAmount(Element element) {
+        String amountString = element.getElementsByClass("product-price__amount").text().replaceAll(" för", "");
+        int amount = 1;
+        if (!amountString.equals("")) {
+            amount = Integer.parseInt(amountString);
+        }
+        return amount;
+    }
+
+    private static Unit extractUnit(Element element) {
+        String unitString = element.getElementsByClass("product-price__unit-item").text().replace("/", "").replace(" ", "").toUpperCase();
+        if (unitString.equals("KG")) {
+            return Unit.KG;
+        } else if (unitString.equals("ST")) {
+            return Unit.ST;
+        } else if (unitString.equals("RABATT")) {
+            return Unit.RABATT;
+        } else if (unitString.equals("")) {
+            return Unit.EMPTY;
+        } else {
+            return null;
+        }
+    }
+
+    private static List<Element> findAllSliderElements(String discountLink) {
+        String requestURL = "https://www.ica.se" + discountLink;
+        try {
+            Document doc = Jsoup.connect(requestURL).maxBodySize(0).get();
+            return doc.select("div.hit-item");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private static String findCityByCords(double latitude, double longitude) throws IOException {
         String googleApiString = "http://maps.googleapis.com/maps/api/geocode/json?latlng=" + latitude + "," + longitude;
         URL googleApiUrl = new URL(googleApiString);

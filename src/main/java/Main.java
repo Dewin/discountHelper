@@ -6,13 +6,14 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        StoreScanner storeScanner = new StoreScanner("79.142.208.0");
-        List<Store> stores = storeScanner.getStoresInRadius(2900);
+        StoreScanner storeScanner = new StoreScanner();
         System.out.println(storeScanner.getLocation());
+        List<Store> stores = storeScanner.getStoresInRadius(2900);
         for (Store store : stores) {
             System.out.println(store.getName());
             System.out.println(store.getDiscountLink());
-            System.out.println("DISTANCE FROM YOU: " + store.getDistanceToUser());
+            System.out.println(store.getItemList());
+            System.out.println("DISTANCE FROM YOU: " + store.getDistanceToUser() + "\n");
         }
     }
 }

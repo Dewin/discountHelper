@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Simon on 2017-06-24.
  */
@@ -9,6 +12,7 @@ public class Store implements Comparable<Store> {
     private String address;
     private String discountLink;
     private StoreType type;
+    private List<Item> itemList;
 
 
     public Store(float latitude, float longitude, double distanceToUser, String name, String address, StoreType type) {
@@ -19,6 +23,7 @@ public class Store implements Comparable<Store> {
         this.address = address;
         this.discountLink = "";
         this.type = type;
+        this.itemList = new ArrayList<Item>();
     }
 
     public float getLatitude() {
@@ -51,6 +56,14 @@ public class Store implements Comparable<Store> {
 
     public void setDiscountLink(String discountLink) {
         this.discountLink = discountLink;
+    }
+
+    public List<Item> getItemList() {
+        return itemList;
+    }
+
+    public void addItem(Item item) {
+        this.itemList.add(item);
     }
 
     public int compareTo(Store o) {

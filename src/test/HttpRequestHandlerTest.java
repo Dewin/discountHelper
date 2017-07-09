@@ -9,7 +9,12 @@ import static org.junit.Assert.assertEquals;
  */
 public class HttpRequestHandlerTest {
     @Test
-    public void getStoreNamesByCity() throws Exception {
+    public void findAllDiscountedItems() throws Exception {
+        //HttpRequestHandler.addAllDiscountedItems("/butiker/nara/sodertalje/ica-nara-orren-1356/butikserbjudanden/");
+    }
+
+    @Test
+    public void getStoreNamesByCityFindCorrectLink() throws Exception {
         StoreScanner storeScanner = new StoreScanner("78.40.41.15");
         List<Store> stores = storeScanner.getStoresInRadius(2900);
         stores = HttpRequestHandler.linkStoresWithWebsite(stores, storeScanner.getLocation().getLatitude(), storeScanner.getLocation().getLongitude());
@@ -17,7 +22,7 @@ public class HttpRequestHandlerTest {
     }
 
     @Test
-    public void getStoreNamesByCity2() throws Exception {
+    public void getStoreNamesByCityFindCorrectLink2() throws Exception {
         StoreScanner storeScanner = new StoreScanner("78.40.41.15");
         List<Store> stores = storeScanner.getStoresInRadius(2900);
         stores = HttpRequestHandler.linkStoresWithWebsite(stores, storeScanner.getLocation().getLatitude(), storeScanner.getLocation().getLongitude());
