@@ -136,6 +136,7 @@ public abstract class HttpRequestHandler {
             Document doc = Jsoup.connect(requestURL).maxBodySize(0).get();
             return doc.select("store-card-list-item:not(.compact)");
         } catch (IOException e) {
+            //TODO take care of when ica doesnt have that webpage. Maybe search for address or name from google
             System.err.print("Seems like ICA made a slip, city " + errName + " is missing it's webpage. ");
             e.printStackTrace();
         }

@@ -6,7 +6,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        StoreScanner storeScanner = new StoreScanner();
+        StoreScanner storeScanner = new StoreScanner("83.250.48.254");
         System.out.println(storeScanner.getLocation());
         List<Store> stores = storeScanner.getStoresInRadius(2900);
         for (Store store : stores) {
