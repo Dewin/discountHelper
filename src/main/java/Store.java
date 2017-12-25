@@ -69,4 +69,9 @@ public class Store implements Comparable<Store> {
     public int compareTo(Store o) {
         return (this.distanceToUser < o.distanceToUser) ? -1 : 1;
     }
+
+    @Override
+    public String toString() {
+        return name + " (" + address + ")";
+    }
 }

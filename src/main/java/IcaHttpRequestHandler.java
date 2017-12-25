@@ -1,3 +1,4 @@
+import javafx.util.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,25 +11,37 @@ import java.util.*;
  */
 public class IcaHttpRequestHandler extends HttpRequestHandler {
 
-    private Map<String, String> foundStoresWithLink;
+    private Map<String, Pair<String, String>> foundStoresWithLink;
 
     public IcaHttpRequestHandler(String city) {
         List<Element> cards = findAllStoresInCity(city);
-        foundStoresWithLink = extractNameAndLink(cards);
+        foundStoresWithLink = extractNameAndAddressWithLink(cards);
     }
 
-    public String findStoreWebsite(Store store) {
-        //Match exact
+    protected String findStoreWebsiteAddress(Store store) {
+        Map<String, String> storeNameAndAddress = new HashMap<String, String>();
+        for (Map.Entry<String, Pair<String, String>> e: foundStoresWithLink.entrySet())
+            storeNameAndAddress.put(e.getKey(), e.getValue().getKey());
+
+        for (Map.Entry<String, String> e : storeNameAndAddress.entrySet()) {
+            if (store.getAddress().toLowerCase().contains(e.getValue().toLowerCase()))
+                return removeEntryAndReturn(e.getKey());
+        }
+        return null;
+    }
+
+    protected String findStoreWebsiteNameExact(Store store) {
         Set<String> foundStoreNames = foundStoresWithLink.keySet();
-        for (Iterator<String> iterator = foundStoreNames.iterator(); iterator.hasNext(); ) {
-            String foundStore = iterator.next();
+        for (String foundStore : foundStoreNames) {
             if (store.getName().equals(foundStore))
                 return removeEntryAndReturn(foundStore);
         }
+        return null;
+    }
 
-        //Match not so exact
-        for (Iterator<String> iterator = foundStoreNames.iterator(); iterator.hasNext(); ) {
-            String foundStore = iterator.next();
+    protected String findStoreWebsiteNameNotSoExact(Store store) {
+        Set<String> foundStoreNames = foundStoresWithLink.keySet();
+        for (String foundStore : foundStoreNames) {
             int lengthSearch = (store.getName().length() > 15 && foundStore.length() > 15) ? 15 : (foundStore.length() < store.getName().length()) ? foundStore.length() : store.getName().length();
             boolean attempt = false;
 
@@ -38,13 +51,14 @@ public class IcaHttpRequestHandler extends HttpRequestHandler {
                 return removeEntryAndReturn(foundStore);
             }
         }
+        return null;
+    }
 
-        //Match the rest by distance
-        //TODO this is unsafe, maybe add a notification to this
+    protected String findStoreWebsiteNameDistance(Store store) {
+        Set<String> foundStoreNames = foundStoresWithLink.keySet();
         double bestScore = store.getName().length();
         String currentWinner = "";
-        for (Iterator<String> iterator = foundStoreNames.iterator(); iterator.hasNext(); ) {
-            String foundStore = iterator.next();
+        for (String foundStore : foundStoreNames) {
             double distanceScore = distanceScore(foundStore, store.getName());
             if (distanceScore < bestScore) {
                 bestScore = distanceScore;
@@ -54,7 +68,6 @@ public class IcaHttpRequestHandler extends HttpRequestHandler {
 
         if (bestScore < store.getName().length())
             return removeEntryAndReturn(currentWinner);
-
         return null;
     }
 
@@ -155,9 +168,9 @@ public class IcaHttpRequestHandler extends HttpRequestHandler {
     }
 
     private String removeEntryAndReturn(String foundStore) {
-        String correctStore = foundStoresWithLink.get(foundStore);
+        String correctLink = foundStoresWithLink.get(foundStore).getValue();
         foundStoresWithLink.remove(foundStore);
-        return correctStore;
+        return correctLink;
     }
 
     private List<Element> findAllStoresInCity(String city) {
@@ -177,12 +190,14 @@ public class IcaHttpRequestHandler extends HttpRequestHandler {
         return null;
     }
 
-    private Map<String, String> extractNameAndLink(List<Element> storeElements) {
-        Map<String, String> legitStores = new HashMap<String, String>();
+    private Map<String, Pair<String, String>> extractNameAndAddressWithLink(List<Element> storeElements) {
+        Map<String, Pair<String, String>> legitStores = new HashMap<String, Pair<String, String>>();
         for (Element e : storeElements) {
             String storeName = e.getElementsByClass("card-heading").text().toLowerCase().replaceAll("(maxi ica)", "ica maxi");
+            String address = e.getElementsByClass("street-name").text();
+            String city = e.getElementsByClass("store-address").select("span").get(1).text();
             String discountLink = e.getElementsByClass("store-card-store-link").last().attr("href");
-            legitStores.put(storeName, discountLink);
+            legitStores.put(storeName, new Pair<String, String>(address + ", " + city, discountLink));
         }
         return legitStores;
     }

@@ -17,35 +17,84 @@ import java.util.*;
 public abstract class HttpRequestHandler {
 
     private static IcaHttpRequestHandler ica;
+    private static Double LATITUDE;
+    private static Double LONGITUDE;
+
+    public static void resetHandlers() {
+        ica = null;
+    }
 
     public static List<Store> linkStoresWithWebsite(List<Store> stores, double latitude, double longitude) throws IOException {
+        LATITUDE = latitude;
+        LONGITUDE = longitude;
 
-        for (Store s : stores) {
+        //Match by address
+        for (Store s : getEmptyStores(stores)) {
             switch (s.getType()) {
                 case ICA:
-                    s.setDiscountLink(getIcaHandler(latitude, longitude).findStoreWebsite(s));
+                    s.setDiscountLink(getIcaHandler().findStoreWebsiteAddress(s));
                     break;
                 default:
                     throw new RuntimeException("A store must have a type.");
             }
         }
+
+        //Match exact name
+        for (Store s : getEmptyStores(stores)) {
+            switch (s.getType()) {
+                case ICA:
+                    s.setDiscountLink(getIcaHandler().findStoreWebsiteNameExact(s));
+                    break;
+                default:
+                    throw new RuntimeException("A store must have a type.");
+            }
+        }
+
+        //Match not so exact name
+        for (Store s : getEmptyStores(stores)) {
+            switch (s.getType()) {
+                case ICA:
+                    s.setDiscountLink(getIcaHandler().findStoreWebsiteNameNotSoExact(s));
+                    break;
+                default:
+                    throw new RuntimeException("A store must have a type.");
+            }
+        }
+
+        //Match name by distance
+        //TODO this is unsafe, maybe add a notification to this
+        for (Store s : getEmptyStores(stores)) {
+            switch (s.getType()) {
+                case ICA:
+                    s.setDiscountLink(getIcaHandler().findStoreWebsiteNameDistance(s));
+                    break;
+                default:
+                    throw new RuntimeException("A store must have a type.");
+            }
+        }
+
         return stores;
     }
 
     public static void addStoreDiscountedItems(Store store, double latitude, double longitude) throws IOException {
+        LATITUDE = latitude;
+        LONGITUDE = longitude;
+
         switch (store.getType()) {
             case ICA:
-                getIcaHandler(latitude, longitude).addAllDiscountedItems(store);
+                getIcaHandler().addAllDiscountedItems(store);
                 break;
             default:
                 throw new RuntimeException("A store must have a type.");
         }
     }
 
-    private static IcaHttpRequestHandler getIcaHandler(double latitude, double longitude) throws IOException {
+    private static IcaHttpRequestHandler getIcaHandler() throws IOException {
         if (ica != null)
             return ica;
-        ica = new IcaHttpRequestHandler(findCityByCords(latitude, longitude));
+        if (LATITUDE == null || LONGITUDE == null)
+            throw new IOException("LATITUDE("+LATITUDE+") or LONGITUDE("+LONGITUDE+") cannot be null");
+        ica = new IcaHttpRequestHandler(findCityByCords(LATITUDE, LONGITUDE));
         return ica;
     }
 
@@ -69,12 +118,27 @@ public abstract class HttpRequestHandler {
         return null;
     }
 
-    static double distanceScore(String str1, String str2) {
+    double distanceScore(String str1, String str2) {
         StringDistance distance = StringDistances.damerauLevenshtein();
         return distance.distance(str1, str2);
     }
 
-    protected abstract String findStoreWebsite(Store store);
+    private static List<Store> getEmptyStores(List<Store> myStores) {
+        List<Store> emptyStores = new ArrayList<Store>();
+        for (Store store : myStores) {
+            if (store.getDiscountLink() == null || store.getDiscountLink().equals(""))
+                emptyStores.add(store);
+        }
+        return emptyStores;
+    }
+
+    protected abstract String findStoreWebsiteAddress(Store store);
+
+    protected abstract String findStoreWebsiteNameExact(Store store);
+
+    protected abstract String findStoreWebsiteNameNotSoExact(Store store);
+
+    protected abstract String findStoreWebsiteNameDistance(Store store);
 
     protected abstract void addAllDiscountedItems(Store store);
 }
