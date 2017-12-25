@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 public class HttpRequestHandlerTest {
     @Test
     public void findAllDiscountedItems() throws Exception {
-        //HttpRequestHandler.addAllDiscountedItems("/butiker/nara/sodertalje/ica-nara-orren-1356/butikserbjudanden/");
+        //HttpRequestHandler.addStoreDiscountedItems("/butiker/nara/sodertalje/ica-nara-orren-1356/butikserbjudanden/");
     }
 
     @Test
